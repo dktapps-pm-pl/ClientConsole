@@ -12,16 +12,21 @@ use pocketmine\utils\TextFormat;
 class CheckConsoleTask extends PluginTask{
 
 	/** @var ClientConsoleLoggerAttachment */
-	protected $attachment;
+	protected static $attachment = null;
 
 	public function __construct(Plugin $owner){
 		parent::__construct($owner);
-		$this->attachment = new ClientConsoleLoggerAttachment();
-		MainLogger::getLogger()->addAttachment($this->attachment);
+		if(self::$attachment === null){
+			self::$attachment = new ClientConsoleLoggerAttachment();
+			MainLogger::getLogger()->addAttachment(self::$attachment);
+		}else{
+			//Since we can't remove the attachment on disable (MainLogger would need to be volatile) we might as well
+			//reuse the the old attachment so we can capture messages during server reload.
+		}
 	}
 
 	public function onRun($currentTick){
-		while($line = $this->attachment->getLine()){
+		while($line = self::$attachment->getLine()){
 			$this->getOwner()->getServer()->broadcastMessage(self::fromANSI((string) $line), $this->getOwner()->getServer()->getOnlinePlayers());
 		}
 	}
