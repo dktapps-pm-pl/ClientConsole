@@ -11,12 +11,14 @@ use pocketmine\utils\TextFormat;
 
 class CheckConsoleTask extends PluginTask{
 
-	/** @var ClientConsoleLoggerAttachment */
-	protected static $attachment = null;
+	protected static $bufferEnabled = false;
 
 	public function __construct(Plugin $owner){
 		parent::__construct($owner);
-		ob_start();
+		if(!self::$bufferEnabled){
+			ob_start();
+			self::$bufferEnabled = true;
+		}
 	}
 
 	public function onRun($currentTick){
@@ -34,7 +36,10 @@ class CheckConsoleTask extends PluginTask{
 	}
 
 	public function onCancel(){
-		ob_end_flush();
+		if(!$this->getOwner()->getServer()->isRunning()){
+			ob_end_flush();
+			$this->getOwner()->getLogger()->debug("Stopped buffering due to server shutdown");
+		}
 	}
 
 	public static function fromANSI(string $line) : string{
