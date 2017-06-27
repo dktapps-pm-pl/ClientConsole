@@ -16,19 +16,25 @@ class CheckConsoleTask extends PluginTask{
 
 	public function __construct(Plugin $owner){
 		parent::__construct($owner);
-		if(self::$attachment === null){
-			self::$attachment = new ClientConsoleLoggerAttachment();
-			MainLogger::getLogger()->addAttachment(self::$attachment);
-		}else{
-			//Since we can't remove the attachment on disable (MainLogger would need to be volatile) we might as well
-			//reuse the the old attachment so we can capture messages during server reload.
-		}
+		ob_start();
 	}
 
 	public function onRun($currentTick){
-		while($line = self::$attachment->getLine()){
-			$this->getOwner()->getServer()->broadcastMessage(self::fromANSI((string) $line), $this->getOwner()->getServer()->getOnlinePlayers());
+		foreach(explode(PHP_EOL, ob_get_contents()) as $line){
+			if($line === ""){
+				continue;
+			}elseif(strpos($line, "\x1b]0;") === 0){
+				continue; //title-tick spam
+			}
+
+			$this->getOwner()->getServer()->broadcastMessage(self::fromANSI((string) trim($line)), $this->getOwner()->getServer()->getOnlinePlayers());
 		}
+
+		ob_flush();
+	}
+
+	public function onCancel(){
+		ob_end_flush();
 	}
 
 	public static function fromANSI(string $line) : string{
