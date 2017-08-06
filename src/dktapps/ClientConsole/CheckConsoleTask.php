@@ -25,7 +25,7 @@ class CheckConsoleTask extends PluginTask{
 		}
 	}
 
-	public function onRun($currentTick){
+	public function onRun(int $currentTick){
 		while($line = self::$attachment->getLine()){
 			$this->getOwner()->getServer()->broadcastMessage(self::fromANSI((string) $line), $this->getOwner()->getServer()->getOnlinePlayers());
 		}
