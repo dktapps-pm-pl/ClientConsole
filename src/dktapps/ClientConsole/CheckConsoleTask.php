@@ -20,14 +20,24 @@ class CheckConsoleTask extends PluginTask{
 			self::$attachment = new ClientConsoleLoggerAttachment();
 			MainLogger::getLogger()->addAttachment(self::$attachment);
 		}else{
-			//Since we can't remove the attachment on disable (MainLogger would need to be volatile) we might as well
-			//reuse the the old attachment so we can capture messages during server reload.
+			//Since we couldn't remove the attachment on disable (old version without attachment removal bugfix), reuse
+			//the the old attachment.
 		}
 	}
 
 	public function onRun(int $currentTick){
 		while($line = self::$attachment->getLine()){
 			$this->getOwner()->getServer()->broadcastMessage(self::fromANSI((string) $line), $this->getOwner()->getServer()->getOnlinePlayers());
+		}
+	}
+
+	public function onCancel(){
+		try{
+			MainLogger::getLogger()->removeAttachment(self::$attachment);
+			self::$attachment = null;
+			$this->getOwner()->getLogger()->debug("Successfully removed logger attachment");
+		}catch(\RuntimeException $e){
+			//older version which doesn't have attachments bugfix
 		}
 	}
 
