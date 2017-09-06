@@ -3,6 +3,7 @@
 namespace dktapps\ClientConsole;
 
 
+use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\PluginTask;
 use pocketmine\utils\MainLogger;
@@ -26,8 +27,15 @@ class CheckConsoleTask extends PluginTask{
 	}
 
 	public function onRun(int $currentTick){
-		while($line = self::$attachment->getLine()){
-			$this->getOwner()->getServer()->broadcastMessage(self::fromANSI((string) $line), $this->getOwner()->getServer()->getOnlinePlayers());
+		if(self::$attachment->count() > 0){
+			$server = $this->getOwner()->getServer();
+			$targets = array_filter($server->getOnlinePlayers(), function(Player $player){
+				return $player->hasPermission("clientconsole.receive");
+			});
+
+			while($line = self::$attachment->getLine()){
+				$server->broadcastMessage(self::fromANSI((string) $line), $targets);
+			}
 		}
 	}
 
