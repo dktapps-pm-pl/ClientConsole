@@ -2,24 +2,34 @@
 
 namespace dktapps\ClientConsole;
 
+use pocketmine\snooze\SleeperNotifier;
 
 class ClientConsoleLoggerAttachment extends \ThreadedLoggerAttachment{
 
 	/** @var \Threaded */
 	protected $buffer;
 
-	public function __construct(){
+	/** @var SleeperNotifier */
+	private $notifier;
+
+	public function __construct(SleeperNotifier $notifier){
 		$this->buffer = new \Threaded();
+		$this->notifier = $notifier;
+	}
+
+	public function getNotifier() : SleeperNotifier{
+		return $this->notifier;
 	}
 
 	public function log($level, $message){
 		$this->buffer[] = $message;
+		$this->notifier->wakeupSleeper();
 	}
 
 	/**
-	 * @return bool|string
+	 * @return string|null
 	 */
-	public function getLine(){
+	public function getLine() : ?string{
 		return $this->buffer->shift();
 	}
 
