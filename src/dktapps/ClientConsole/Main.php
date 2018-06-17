@@ -10,7 +10,7 @@ class Main extends PluginBase{
 	/** @var ClientConsoleLoggerAttachment */
 	private $loggerAttachment;
 
-	public function onEnable(){
+	public function onEnable() : void{
 		$notifier = new SleeperNotifier();
 		$this->loggerAttachment = new ClientConsoleLoggerAttachment($notifier);
 
@@ -28,7 +28,7 @@ class Main extends PluginBase{
 		$this->getServer()->getLogger()->addAttachment($this->loggerAttachment);
 	}
 
-	public function onDisable(){
+	public function onDisable() : void{
 		$this->getServer()->getTickSleeper()->removeNotifier($this->loggerAttachment->getNotifier());
 		$this->getServer()->getLogger()->removeAttachment($this->loggerAttachment);
 	}
