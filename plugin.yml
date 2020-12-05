@@ -8,10 +8,6 @@ description: Relays console output to players as chat messages
 website: https://github.com/dktapps/ClientConsole
 
 permissions:
- clientconsole:
-  default: op #child permissions don't get calculated correctly when op status changes
-  description: ClientConsole root permission node
-  children:
-    clientconsole.receive:
-     default: op
-     description: Allows the permissible to receive output relayed from the console
+ clientconsole.receive:
+  default: op
+  description: Allows the permissible to receive output relayed from the console
