@@ -1,5 +1,6 @@
 name: ClientConsole
 main: dktapps\ClientConsole\Main
+src-namespace-prefix: dktapps\ClientConsole
 version: 0.1.0
 api: [4.0.0]
 load: POSTWORLD
