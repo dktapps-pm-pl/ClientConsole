@@ -12,15 +12,16 @@ class Main extends PluginBase{
 
 	public function onEnable() : void{
 		$notifier = new SleeperNotifier();
-		$this->loggerAttachment = new ClientConsoleLoggerAttachment($notifier);
+		$buffer = new \Threaded();
+		$this->loggerAttachment = new ClientConsoleLoggerAttachment($notifier, $buffer);
 
-		$this->getServer()->getTickSleeper()->addNotifier($notifier, function() : void{
+		$this->getServer()->getTickSleeper()->addNotifier($notifier, function() use ($buffer) : void{
 			$server = $this->getServer();
 			$targets = array_filter($server->getOnlinePlayers(), function(Player $player){
 				return $player->hasPermission("clientconsole.receive");
 			});
 
-			while(($line = $this->loggerAttachment->getLine()) !== null){
+			while(($line = $buffer->shift()) !== null){
 				$server->broadcastMessage($line, $targets);
 			}
 		});

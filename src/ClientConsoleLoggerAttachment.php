@@ -12,9 +12,9 @@ class ClientConsoleLoggerAttachment extends \ThreadedLoggerAttachment{
 	/** @var SleeperNotifier */
 	private $notifier;
 
-	public function __construct(SleeperNotifier $notifier){
-		$this->buffer = new \Threaded();
+	public function __construct(SleeperNotifier $notifier, \Threaded $buffer){
 		$this->notifier = $notifier;
+		$this->buffer = $buffer;
 	}
 
 	public function getNotifier() : SleeperNotifier{
@@ -25,12 +25,4 @@ class ClientConsoleLoggerAttachment extends \ThreadedLoggerAttachment{
 		$this->buffer[] = $message;
 		$this->notifier->wakeupSleeper();
 	}
-
-	/**
-	 * @return string|null
-	 */
-	public function getLine() : ?string{
-		return $this->buffer->shift();
-	}
-
 }
