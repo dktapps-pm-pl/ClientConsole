@@ -22,6 +22,7 @@ class Main extends PluginBase{
 			});
 
 			while(($line = $buffer->shift()) !== null){
+				/** @var string $line */
 				$server->broadcastMessage($line, $targets);
 			}
 		});
