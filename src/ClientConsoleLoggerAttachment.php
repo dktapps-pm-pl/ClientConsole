@@ -2,27 +2,32 @@
 
 namespace dktapps\ClientConsole;
 
+use pmmp\thread\ThreadSafeArray;
+use pocketmine\snooze\SleeperHandlerEntry;
 use pocketmine\snooze\SleeperNotifier;
+use pocketmine\thread\log\ThreadSafeLoggerAttachment;
+use function spl_object_hash;
+use function spl_object_id;
 
-class ClientConsoleLoggerAttachment extends \ThreadedLoggerAttachment{
+class ClientConsoleLoggerAttachment extends ThreadSafeLoggerAttachment{
+	/** @var SleeperNotifier[] */
+	private static array $notifiers = [];
 
-	/** @var \Threaded */
-	protected $buffer;
+	/**
+	 * @phpstan-param ThreadSafeArray<int, string> $buffer
+	 */
+	public function __construct(
+		private SleeperHandlerEntry $sleeperEntry,
+		private ThreadSafeArray $buffer
+	){}
 
-	/** @var SleeperNotifier */
-	private $notifier;
-
-	public function __construct(SleeperNotifier $notifier, \Threaded $buffer){
-		$this->notifier = $notifier;
-		$this->buffer = $buffer;
-	}
-
-	public function getNotifier() : SleeperNotifier{
-		return $this->notifier;
-	}
-
-	public function log($level, $message){
+	public function log(string $level, string $message) : void{
 		$this->buffer[] = $message;
-		$this->notifier->wakeupSleeper();
+		$notifier = self::$notifiers[spl_object_id($this)] ??= $this->sleeperEntry->createNotifier();
+		$notifier->wakeupSleeper();
+	}
+
+	public function __destruct(){
+		unset(self::$notifiers[spl_object_id($this)]);
 	}
 }

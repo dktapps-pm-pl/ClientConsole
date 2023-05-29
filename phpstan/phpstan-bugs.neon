@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Property dktapps\\\\ClientConsole\\\\ClientConsoleLoggerAttachment\\:\\:\\$buffer is never read, only written\\.$#"
+			count: 1
+			path: ../src/ClientConsoleLoggerAttachment.php

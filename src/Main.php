@@ -2,20 +2,20 @@
 
 namespace dktapps\ClientConsole;
 
+use pmmp\thread\ThreadSafeArray;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\snooze\SleeperNotifier;
 
 class Main extends PluginBase{
-	/** @var ClientConsoleLoggerAttachment */
-	private $loggerAttachment;
+	private ClientConsoleLoggerAttachment $loggerAttachment;
+	private int $notifierId;
 
 	public function onEnable() : void{
-		$notifier = new SleeperNotifier();
-		$buffer = new \Threaded();
-		$this->loggerAttachment = new ClientConsoleLoggerAttachment($notifier, $buffer);
+		$buffer = new ThreadSafeArray();
 
-		$this->getServer()->getTickSleeper()->addNotifier($notifier, function() use ($buffer) : void{
+
+		$sleeperEntry = $this->getServer()->getTickSleeper()->addNotifier(function() use ($buffer) : void{
 			$server = $this->getServer();
 			$targets = array_filter($server->getOnlinePlayers(), function(Player $player){
 				return $player->hasPermission("clientconsole.receive");
@@ -26,12 +26,14 @@ class Main extends PluginBase{
 				$server->broadcastMessage($line, $targets);
 			}
 		});
+		$this->notifierId = $sleeperEntry->getNotifierId();
 
+		$this->loggerAttachment = new ClientConsoleLoggerAttachment($sleeperEntry, $buffer);
 		$this->getServer()->getLogger()->addAttachment($this->loggerAttachment);
 	}
 
 	public function onDisable() : void{
-		$this->getServer()->getTickSleeper()->removeNotifier($this->loggerAttachment->getNotifier());
+		$this->getServer()->getTickSleeper()->removeNotifier($this->notifierId);
 		$this->getServer()->getLogger()->removeAttachment($this->loggerAttachment);
 	}
 }
